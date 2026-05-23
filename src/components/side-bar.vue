@@ -4,7 +4,7 @@
     :rail="!mobile && rail"
     :permanent="!mobile"
     :temporary="mobile"
-    @click="if(!mobile) rail = false"
+    @click="openRail"
     class="!bg-card !border-r !border-border"
     elevation="0"
   >
@@ -95,6 +95,12 @@ const drawerModel = computed({
 const onNavClick = () => {
   if (mobile.value) {
     emit("update:modelValue", false);
+  }
+};
+
+const openRail = () => {
+  if (!mobile.value) {
+    rail.value = false;
   }
 };
 </script>

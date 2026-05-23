@@ -1,7 +1,7 @@
 <template>
   <v-container class="!p-0">
     <div class="card">
-      <h2 class="text-xl font-heading font-bold mb-6 text-foreground">{{$t("addTransaction.title")}}</h2>
+      <h2 class="add-bill-title text-xl font-bold mb-6 text-foreground">{{$t("addTransaction.title")}}</h2>
       
       <!-- Basic Info -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -60,13 +60,13 @@
             </div>
             <div>
                <label class="block text-sm font-medium text-muted-foreground mb-2">{{ $t("addBill.amount") }}</label>
-               <div class="flex items-center gap-2">
-                 <div class="relative flex-grow">
-                   <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">¥</span>
+               <div class="flex items-center gap-2 min-h-[50px]">
+                 <div class="relative flex-grow h-[50px]">
+                   <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground leading-none">¥</span>
                    <input
                      v-model="amounts[index]"
                      type="number"
-                     class="input-field w-full pl-8"
+                     class="input-field w-full h-full pl-8 bg-background"
                      :placeholder="$t('addBill.amountPlaceholder')"
                    />
                  </div>
@@ -193,6 +193,10 @@ const addTransaction = () => {
 </script>
 
 <style scoped>
+.add-bill-title {
+  font-family: SimHei, "Microsoft YaHei", sans-serif;
+}
+
 /* VueDatePicker overrides to match Vuetify roughly */
 :deep(.dp__input) {
   padding: 10px 12px;
