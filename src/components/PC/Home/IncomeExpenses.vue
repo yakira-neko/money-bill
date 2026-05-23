@@ -1,40 +1,40 @@
 <template>
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 w-full">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
     <!-- Income -->
-    <div class="card flex flex-col justify-between p-4 border-t-4 !border-t-emerald-500">
+    <div class="metric-card metric-card--income">
       <div class="flex items-center gap-2 mb-2">
-        <div class="p-1.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30">
-           <v-icon icon="mdi-arrow-down-bold" size="small" color="success" class="text-emerald-600"></v-icon>
+        <div class="metric-icon">
+          <v-icon icon="mdi-arrow-down-bold" size="small"></v-icon>
         </div>
         <span class="text-sm font-medium text-muted-foreground">{{ $t("home.income") }}</span>
       </div>
-      <p class="text-3xl font-heading font-bold text-emerald-600 truncate ml-1 pb-1">
+      <p class="metric-value">
         {{ income.toFixed(2) }}
       </p>
     </div>
 
     <!-- Expenses -->
-    <div class="card flex flex-col justify-between p-4 border-t-4 !border-t-rose-500">
+    <div class="metric-card metric-card--expense">
       <div class="flex items-center gap-2 mb-2">
-        <div class="p-1.5 rounded-full bg-rose-100 dark:bg-rose-900/30">
-           <v-icon icon="mdi-arrow-up-bold" size="small" color="error" class="text-rose-600"></v-icon>
+        <div class="metric-icon">
+          <v-icon icon="mdi-arrow-up-bold" size="small"></v-icon>
         </div>
         <span class="text-sm font-medium text-muted-foreground">{{ $t("expenses") }}</span>
       </div>
-      <p class="text-3xl font-heading font-bold text-rose-600 truncate ml-1 pb-1">
+      <p class="metric-value">
         {{ expenses.toFixed(2) }}
       </p>
     </div>
 
     <!-- Balance -->
-    <div class="card flex flex-col justify-between p-4 border-t-4 !border-t-blue-500">
+    <div class="metric-card metric-card--balance">
       <div class="flex items-center gap-2 mb-2">
-        <div class="p-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30">
-           <v-icon icon="mdi-wallet" size="small" color="primary" class="text-blue-600"></v-icon>
+        <div class="metric-icon">
+          <v-icon icon="mdi-wallet" size="small"></v-icon>
         </div>
         <span class="text-sm font-medium text-muted-foreground">{{ $t("balance") }}</span>
       </div>
-      <p class="text-3xl font-heading font-bold text-foreground truncate ml-1 pb-1">
+      <p class="metric-value">
         {{ (income - expenses).toFixed(2) }}
       </p>
     </div>
@@ -58,3 +58,58 @@ invoke("get_income_expenses").then((i) => {
   console.log(i);
 });
 </script>
+
+<style scoped>
+.metric-card {
+  --metric-color: hsl(var(--foreground));
+  --metric-soft: hsl(var(--muted));
+
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: space-between;
+  border-top: 4px solid var(--metric-color);
+  padding: var(--space-md, 1rem);
+}
+
+.metric-card--income {
+  --metric-color: hsl(var(--metric-income));
+  --metric-soft: hsl(var(--metric-income-soft));
+}
+
+.metric-card--expense {
+  --metric-color: hsl(var(--metric-expense));
+  --metric-soft: hsl(var(--metric-expense-soft));
+}
+
+.metric-card--balance {
+  --metric-color: hsl(var(--metric-balance));
+  --metric-soft: hsl(var(--metric-balance-soft));
+}
+
+.metric-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: 0 0 auto;
+  border-radius: 9999px;
+  background: var(--metric-soft);
+  color: var(--metric-color);
+}
+
+.metric-value {
+  min-width: 0;
+  margin-left: var(--space-xs, 0.25rem);
+  padding-bottom: var(--space-xs, 0.25rem);
+  overflow: hidden;
+  color: var(--metric-color);
+  font-family: theme("fontFamily.heading");
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 2.25rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

@@ -31,7 +31,88 @@
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
     --ring: 0 0% 3.9%;
+
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+    --space-3xl: 4rem;
+
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px rgb(0 0 0 / 0.15);
+
+    --chart-1: 347 77% 50%;
+    --chart-2: 160 84% 39%;
+    --chart-3: 221 83% 53%;
+    --chart-grid: 0 0% 89.8%;
+    --chart-axis: 240 4% 46%;
+    --chart-tooltip: 0 0% 100%;
+    --chart-tooltip-foreground: 0 0% 9%;
+
+    --metric-income: 160 84% 39%;
+    --metric-income-soft: 149 80% 90%;
+    --metric-expense: 347 77% 50%;
+    --metric-expense-soft: 356 100% 95%;
+    --metric-balance: 221 83% 53%;
+    --metric-balance-soft: 214 95% 93%;
     
     --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 50.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 83.1%;
+
+    --chart-1: 347 77% 58%;
+    --chart-2: 158 64% 52%;
+    --chart-3: 217 91% 60%;
+    --chart-grid: 0 0% 20%;
+    --chart-axis: 0 0% 63.9%;
+    --chart-tooltip: 0 0% 9%;
+    --chart-tooltip-foreground: 0 0% 98%;
+
+    --metric-income: 158 64% 52%;
+    --metric-income-soft: 152 69% 16%;
+    --metric-expense: 347 77% 58%;
+    --metric-expense-soft: 346 64% 18%;
+    --metric-balance: 217 91% 60%;
+    --metric-balance-soft: 224 64% 18%;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-lg border border-border bg-card text-card-foreground;
+
+    box-shadow: var(--shadow-sm);
   }
 }

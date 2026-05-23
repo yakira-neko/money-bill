@@ -1,5 +1,5 @@
 <template>
-  <div class="h-72 card w-full">
+  <div class="chart-card card">
     <v-chart
       class="h-full w-full"
       :option="option"
@@ -14,48 +14,70 @@ import { use } from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
 import { BarChart } from "echarts/charts";
 import {
-  TitleComponent,
   TooltipComponent,
   LegendComponent,
 } from "echarts/components";
 import VChart, { THEME_KEY } from "vue-echarts";
-import { ref, provide, Ref } from "vue";
+import { computed, onMounted, onUnmounted, provide, ref } from "vue";
 import { GridComponent } from "echarts/components";
 import { ECBasicOption } from "echarts/types/dist/shared";
 import { invoke } from "@tauri-apps/api/core";
 import { useI18n } from "vue-i18n";
-import { computed } from "vue";
 
 use([
   GridComponent,
   CanvasRenderer,
   BarChart,
-  TitleComponent,
   TooltipComponent,
   LegendComponent,
 ]);
 const { t } = useI18n();
 provide(THEME_KEY, "auto");
-let loading = ref<boolean>(false);
+const loading = ref<boolean>(false);
+const incomeData = ref<number[]>([0, 0, 0, 0, 0, 0, 0]);
+const expenseData = ref<number[]>([0, 0, 0, 0, 0, 0, 0]);
+const themeTick = ref(0);
 
-// Use computed/ref to allow theme updates? For now static is fine or just inline
-let op = ref({
+const readToken = (name: string) => {
+  themeTick.value;
+
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  return getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim();
+};
+
+const hslToken = (name: string) => `hsl(${readToken(name)})`;
+
+const option = computed<ECBasicOption>(() => ({
   tooltip: {
     trigger: "axis",
     axisPointer: {
       type: "shadow",
     },
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderColor: '#e4e4e7',
+    backgroundColor: hslToken("--chart-tooltip"),
+    borderColor: hslToken("--border"),
+    borderWidth: 1,
+    padding: [8, 10],
     textStyle: {
-      color: '#18181b'
-    }
+      color: hslToken("--chart-tooltip-foreground"),
+      fontFamily: "Quicksand, sans-serif",
+    },
+    valueFormatter: (value: number | string) => {
+      const numericValue = Number(value);
+      return Number.isNaN(numericValue)
+        ? String(value)
+        : Math.abs(numericValue).toFixed(2);
+    },
   },
   grid: {
-    left: "3%",
-    right: "4%",
-    bottom: "3%",
-    top: "10%",
+    left: 8,
+    right: 12,
+    bottom: 8,
+    top: 12,
     containLabel: true,
   },
   xAxis: [
@@ -75,19 +97,27 @@ let op = ref({
       },
       axisLine: {
         lineStyle: {
-            color: '#71717a' /* zinc-500 */
-        }
-      }
+          color: hslToken("--chart-axis"),
+        },
+      },
+      axisLabel: {
+        color: hslToken("--muted-foreground"),
+        fontFamily: "Quicksand, sans-serif",
+      },
     },
   ],
   yAxis: [
     {
       type: "value",
       splitLine: {
-          lineStyle: {
-              color: '#e4e4e7' /* zinc-200 */
-          }
-      }
+        lineStyle: {
+          color: hslToken("--chart-grid"),
+        },
+      },
+      axisLabel: {
+        color: hslToken("--muted-foreground"),
+        fontFamily: "Quicksand, sans-serif",
+      },
     },
   ],
   series: [
@@ -95,37 +125,62 @@ let op = ref({
       name: t("expenses"),
       type: "bar",
       barWidth: "20%",
-      data: [0, 0, 0, 0, 0, 0, 0],
+      data: expenseData.value.map((value) => value * -1),
       animationDelay: function (idx: number) {
         return idx * 10;
       },
-      color: "#e11d48",
+      color: hslToken("--metric-expense"),
       itemStyle: {
-          borderRadius: [4, 4, 0, 0]
-      }
+        borderRadius: [4, 4, 0, 0],
+      },
     },
     {
       name: t("income"),
       type: "bar",
       barWidth: "20%",
-      data: [0, 0, 0, 0, 0, 0, 0],
+      data: incomeData.value,
       animationDelay: function (idx: number) {
         return idx * 10;
       },
-      color: "#059669",
+      color: hslToken("--metric-income"),
       itemStyle: {
-          borderRadius: [4, 4, 0, 0]
-      }
+        borderRadius: [4, 4, 0, 0],
+      },
     },
   ],
+}));
+
+let themeObserver: MutationObserver | undefined;
+
+onMounted(() => {
+  themeTick.value += 1;
+
+  themeObserver = new MutationObserver(() => {
+    themeTick.value += 1;
+  });
+
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class", "style"],
+  });
 });
-let option: Ref<ECBasicOption> = ref(op);
+
+onUnmounted(() => {
+  themeObserver?.disconnect();
+});
+
 loading.value = true;
 invoke("get_weekly_income_expenses").then((res: any) => {
   loading.value = false;
-  console.log(res["expense"]);
-
-  op.value.series[0].data = (res["expenses"] as number[]).map((v) => v * -1);
-  op.value.series[1].data = res["income"];
+  expenseData.value = res["expenses"] as number[];
+  incomeData.value = res["income"] as number[];
 });
 </script>
+
+<style scoped>
+.chart-card {
+  width: 100%;
+  height: 18rem;
+  padding: var(--space-md);
+}
+</style>
