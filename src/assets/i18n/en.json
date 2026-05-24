@@ -35,6 +35,7 @@
     "accountLabel": "Account",
     "amountLabel": "Amount",
     "amountPlaceholder": "Please enter amount",
+    "addAccount": "Add Account",
     "deleteAccount": "Delete Account",
     "addTransaction": "Add Transaction",
     "basicInfo": "Basic Information",

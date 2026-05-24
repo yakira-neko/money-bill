@@ -35,6 +35,7 @@
     "accountLabel": "账户",
     "amountLabel": "金额",
     "amountPlaceholder": "请输入金额",
+    "addAccount": "添加账户",
     "deleteAccount": "删除账户",
     "addTransaction": "添加交易",
     "basicInfo": "基本信息",

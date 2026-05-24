@@ -44,6 +44,17 @@
       <div class="w-full h-px bg-border my-6"></div>
 
       <!-- Account List -->
+      <div class="mb-4 flex justify-between items-center">
+        <h3 class="text-base font-medium text-foreground">{{ $t("addBill.accountList") }}</h3>
+        <button
+          @click="addAccountRow"
+          class="btn-primary flex items-center gap-2"
+          type="button"
+        >
+          <v-icon icon="mdi-plus" size="small"></v-icon>
+          {{ $t("addBill.addAccount") }}
+        </button>
+      </div>
       <div class="space-y-4">
         <div v-for="(account, index) in accountList" :key="index" class="p-4 rounded-lg border border-border/50 bg-secondary/5">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
@@ -117,7 +128,7 @@ const accountList: Ref<AccountItem[]> = ref([
     icon: "/svg/wallet.svg",
   },
 ]);
-const amounts = ref([]);
+const amounts: Ref<string[]> = ref([]);
 const date = ref(new Date());
 const dateMenu = ref(false);
 
@@ -128,17 +139,19 @@ const formattedDate = computed(() => {
 const extra = ref("");
 const currency = ref("");
 
+const createEmptyAccount = (): AccountItem => ({
+  name: t("addBillAccount.selectAccount"),
+  icon: "/svg/wallet.svg",
+});
+
+const addAccountRow = () => {
+  accountList.value.push(createEmptyAccount());
+  amounts.value.push("");
+};
+
 const changeAccount = (account: AccountItem, index: string) => {
   const idx = parseInt(index);
   accountList.value[idx] = account;
-
-  // 如果是最后一个账户被选择了，自动添加新的空账户
-  if (idx === accountList.value.length - 1) {
-    accountList.value.push({
-      name: t("addBillAccount.selectAccount"),
-      icon: "/svg/wallet.svg",
-    });
-  }
 };
 
 const deleteAccount = (index: number) => {
@@ -175,12 +188,7 @@ const addTransaction = () => {
   invoke("add_bills", data)
     .then(() => {
       // 重置表单
-      accountList.value = [
-        {
-          name: t("addBillAccount.selectAccount"),
-          icon: "/svg/wallet.svg",
-        },
-      ];
+      accountList.value = [createEmptyAccount()];
       amounts.value = [];
       extra.value = "";
       date.value = new Date();
