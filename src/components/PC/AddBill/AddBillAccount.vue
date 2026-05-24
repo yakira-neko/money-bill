@@ -3,7 +3,7 @@
     <template v-slot:activator="{ props }">
       <div
         v-bind="props"
-        class="input-field flex items-center justify-between cursor-pointer w-full !py-3 h-[50px] bg-background"
+        class="bill-account-trigger"
         @click="isOpen = true"
       >
         <div class="flex items-center gap-2 overflow-hidden">
@@ -111,3 +111,34 @@ watchEffect(() => {
     });
 });
 </script>
+
+<style scoped>
+.bill-account-trigger {
+  display: flex;
+  width: 100%;
+  height: 48px;
+  min-height: 48px;
+  box-sizing: border-box;
+  cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background-color: hsl(var(--background));
+  padding: 0 0.75rem;
+  color: hsl(var(--foreground));
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.bill-account-trigger:hover {
+  border-color: hsl(var(--foreground) / 0.35);
+}
+
+.bill-account-trigger:focus-within {
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 3px hsl(var(--ring) / 0.1);
+}
+</style>

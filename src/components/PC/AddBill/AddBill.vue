@@ -1,6 +1,6 @@
 <template>
   <v-container class="!p-0">
-    <div class="card">
+    <div class="card add-bill-card p-5">
       <h2 class="text-xl font-heading font-bold mb-6 text-foreground">{{$t("addTransaction.title")}}</h2>
       
       <!-- Basic Info -->
@@ -56,9 +56,9 @@
         </button>
       </div>
       <div class="space-y-4">
-        <div v-for="(account, index) in accountList" :key="index" class="p-4 rounded-lg border border-border/50 bg-secondary/5">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-            <div>
+        <div v-for="(account, index) in accountList" :key="index" class="account-row">
+          <div class="account-row-grid">
+            <div class="min-w-0">
                <label class="block text-sm font-medium text-muted-foreground mb-2">
                  {{ $t("addBill.account") }} {{ index + 1 }}
                </label>
@@ -69,28 +69,27 @@
                  class="w-full"
                />
             </div>
-            <div>
+            <div class="min-w-0">
                <label class="block text-sm font-medium text-muted-foreground mb-2">{{ $t("addBill.amount") }}</label>
-               <div class="flex items-center gap-2">
-                 <div class="relative flex-grow">
+               <div class="relative">
                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">¥</span>
                    <input
                      v-model="amounts[index]"
                      type="number"
-                     class="input-field w-full pl-8"
+                     class="bill-control w-full pl-8"
                      :placeholder="$t('addBill.amountPlaceholder')"
                    />
-                 </div>
-                 
-                 <button
-                   v-if="index > 0"
-                   @click="deleteAccount(index)"
-                   class="p-3 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
-                   :title="$t('addBill.deleteAccountTitle')"
-                 >
-                   <v-icon icon="mdi-delete"></v-icon>
-                 </button>
                </div>
+            </div>
+            <div class="account-row-action">
+              <button
+                v-if="index > 0"
+                @click="deleteAccount(index)"
+                class="delete-account-btn"
+                :title="$t('addBill.deleteAccountTitle')"
+              >
+                <v-icon icon="mdi-delete" size="small"></v-icon>
+              </button>
             </div>
           </div>
         </div>
@@ -201,6 +200,101 @@ const addTransaction = () => {
 </script>
 
 <style scoped>
+.add-bill-card {
+  border-color: hsl(var(--border) / 0.72);
+  box-shadow:
+    0 1px 2px rgb(15 23 42 / 0.04),
+    0 14px 34px rgb(15 23 42 / 0.06);
+}
+
+.account-row {
+  padding: 1rem;
+  border: 1px solid hsl(var(--border) / 0.72);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--secondary) / 0.22) 100%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.75);
+}
+
+.account-row-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 1fr) 44px;
+  gap: 1.5rem;
+  align-items: end;
+}
+
+.bill-control {
+  height: 48px;
+  min-height: 48px;
+  box-sizing: border-box;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font: inherit;
+  line-height: 1.25rem;
+  outline: none;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.bill-control::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
+.bill-control:hover {
+  border-color: hsl(var(--foreground) / 0.35);
+}
+
+.bill-control:focus {
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 3px hsl(var(--ring) / 0.1);
+}
+
+.account-row-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+}
+
+.delete-account-btn {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  color: hsl(var(--destructive));
+  transition:
+    background-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.delete-account-btn:hover {
+  background-color: hsl(var(--destructive) / 0.1);
+  box-shadow: inset 0 0 0 1px hsl(var(--destructive) / 0.16);
+}
+
+.delete-account-btn:active {
+  transform: translateY(1px);
+}
+
+@media (max-width: 767px) {
+  .account-row-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .account-row-action {
+    justify-content: flex-end;
+    min-height: auto;
+  }
+}
+
 /* VueDatePicker overrides to match Vuetify roughly */
 :deep(.dp__input) {
   padding: 10px 12px;
