@@ -17,7 +17,7 @@
       <div class="flex-1">
         <div class="font-medium">{{ displayName }}</div>
         <div class="text-sm text-gray-500">
-          {{ account.balance }} {{ account.currency }}
+          {{ account.balance }} {{ formatCurrency(account.currency) }}
         </div>
       </div>
     </div>
@@ -32,7 +32,7 @@
           <div class="flex-1">
             <div class="font-medium">{{ child.name }}</div>
             <div class="text-sm text-gray-500">
-              {{ child.balance }} {{ child.currency }}
+              {{ child.balance }} {{ formatCurrency(child.currency) }}
             </div>
           </div>
         </div>
@@ -88,6 +88,18 @@ const hasChildren = computed(() => {
 const displayName = computed(() => {
   return props.level;
 });
+
+const formatCurrency = (currency: string) => {
+  const currencySymbols: Record<string, string> = {
+    CNY: '¥',
+    USD: '$',
+    EUR: '€',
+    JPY: '¥',
+    GBP: '£'
+  };
+
+  return currencySymbols[currency] ? `${currencySymbols[currency]} ${currency}` : currency;
+};
 
 // 切换展开/收起状态
 const toggleExpanded = () => {

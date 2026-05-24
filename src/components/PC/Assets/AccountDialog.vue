@@ -29,10 +29,26 @@
             </v-col>
             <v-col cols="12">
               <v-select
-                v-model="editedItem.currency"
-                :items="currencies"
+                v-model="currencyType"
+                :items="currencyOptions"
                 :label="$t('assets.currency')"
+                item-title="label"
+                item-value="value"
               ></v-select>
+            </v-col>
+            <v-col v-if="isCustomCurrency" cols="12" md="7">
+              <v-text-field
+                v-model="customCurrencyName"
+                :label="$t('assets.customCurrencyName')"
+                :placeholder="$t('assets.customCurrencyNamePlaceholder')"
+              ></v-text-field>
+            </v-col>
+            <v-col v-if="isCustomCurrency" cols="12" md="5">
+              <v-text-field
+                v-model="customCurrencySymbol"
+                :label="$t('assets.customCurrencySymbol')"
+                :placeholder="$t('assets.customCurrencySymbolPlaceholder')"
+              ></v-text-field>
             </v-col>
           </v-row>
         </v-container>
@@ -43,7 +59,7 @@
         <v-btn color="blue-darken-1" variant="text" @click="close">
           {{ $t('common.cancel') }}
         </v-btn>
-        <v-btn color="blue-darken-1" variant="text" @click="save">
+        <v-btn color="blue-darken-1" variant="text" :disabled="!canSave" @click="save">
           {{ $t('common.save') }}
         </v-btn>
       </v-card-actions>
@@ -79,6 +95,10 @@ const editedItem = ref({
 
 const simpleName = ref('')
 const accountType = ref('assets')
+const customCurrencyValue = 'custom'
+const currencyType = ref('CNY')
+const customCurrencyName = ref('')
+const customCurrencySymbol = ref('')
 
 const accountTypes = computed(() => [
   { label: t('addBillAccount.income'), value: 'income' },
@@ -87,12 +107,61 @@ const accountTypes = computed(() => [
   { label: t('addBillAccount.liabilities'), value: 'liabilities' }
 ])
 
-const currencies = ['CNY', 'USD', 'EUR', 'JPY', 'GBP']
+const currencyOptions = computed(() => [
+  { label: t('assets.currencies.CNY'), value: 'CNY' },
+  { label: t('assets.currencies.USD'), value: 'USD' },
+  { label: t('assets.currencies.EUR'), value: 'EUR' },
+  { label: t('assets.currencies.JPY'), value: 'JPY' },
+  { label: t('assets.currencies.GBP'), value: 'GBP' },
+  { label: t('assets.customCurrency'), value: customCurrencyValue }
+])
+
+const isCustomCurrency = computed(() => currencyType.value === customCurrencyValue)
+const canSave = computed(() => !isCustomCurrency.value || customCurrencyName.value.trim().length > 0)
+const presetCurrencyValues = computed(() =>
+  currencyOptions.value
+    .filter((currency) => currency.value !== customCurrencyValue)
+    .map((currency) => currency.value)
+)
+
+const normalizeCustomCurrency = (currency: string) => {
+  const trimmedCurrency = currency.trim()
+  const symbolMatch = trimmedCurrency.match(/^(\S+)\s+(.+)$/)
+
+  return {
+    symbol: symbolMatch ? symbolMatch[1] : '',
+    name: symbolMatch ? symbolMatch[2] : trimmedCurrency
+  }
+}
+
+const resetCurrencyFields = (currency = 'CNY') => {
+  if (presetCurrencyValues.value.includes(currency)) {
+    currencyType.value = currency
+    customCurrencyName.value = ''
+    customCurrencySymbol.value = ''
+    return
+  }
+
+  const customCurrency = normalizeCustomCurrency(currency)
+  currencyType.value = customCurrencyValue
+  customCurrencyName.value = customCurrency.name
+  customCurrencySymbol.value = customCurrency.symbol
+}
+
+const buildCurrencyValue = () => {
+  if (!isCustomCurrency.value) return currencyType.value
+
+  const name = customCurrencyName.value.trim()
+  const symbol = customCurrencySymbol.value.trim()
+
+  return [symbol, name].filter(Boolean).join(' ')
+}
 
 watch(() => props.modelValue, (val) => {
   if (val) {
     if (props.isEdit && props.item) {
       editedItem.value = { ...props.item }
+      resetCurrencyFields(props.item.currency || 'CNY')
       // Split name to get type and simple name
       const parts = props.item.name.split('::')
       if (parts.length > 0) {
@@ -130,6 +199,7 @@ watch(() => props.modelValue, (val) => {
         icon: '',
         extra: ''
       }
+      resetCurrencyFields('CNY')
       simpleName.value = ''
       accountType.value = 'assets'
     }
@@ -170,6 +240,7 @@ const save = () => {
     }
     
   editedItem.value.name = fullName
+  editedItem.value.currency = buildCurrencyValue()
   emit('save', editedItem.value)
   close()
 }

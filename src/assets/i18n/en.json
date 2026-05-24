@@ -62,7 +62,19 @@
     "accountName": "Account Name",
     "accountNameHint": "Name will be used as identifier",
     "currency": "Currency",
-    "accountType": "Account Type"
+    "accountType": "Account Type",
+    "customCurrency": "Custom Currency",
+    "customCurrencyName": "Currency Name or Code",
+    "customCurrencyNamePlaceholder": "e.g. BTC, Points, USDT",
+    "customCurrencySymbol": "Currency Symbol",
+    "customCurrencySymbolPlaceholder": "e.g. ₿, ¤, ₮",
+    "currencies": {
+      "CNY": "Chinese Yuan (CNY)",
+      "USD": "US Dollar (USD)",
+      "EUR": "Euro (EUR)",
+      "JPY": "Japanese Yen (JPY)",
+      "GBP": "British Pound (GBP)"
+    }
   },
   "common": {
     "save": "Save",

@@ -40,7 +40,13 @@
             <span class="text-gray-700">{{ formatBalance(account.balance) }}</span>
           </template>
         </span>
-        <span class="w-12 text-right" :class="{'text-gray-400': account.isParent, 'text-gray-600': !account.isParent}">{{ account.currency }}</span>
+        <span
+          class="w-20 text-right truncate"
+          :title="formatCurrency(account.currency)"
+          :class="{'text-gray-400': account.isParent, 'text-gray-600': !account.isParent}"
+        >
+          {{ formatCurrency(account.currency) }}
+        </span>
       </div>
     </div>
     <div v-if="hasChildren && isExpanded"
@@ -122,6 +128,18 @@ const formatBalance = (balance: number) => {
     maximumFractionDigits: 2,
     useGrouping: true
   });
+};
+
+const formatCurrency = (currency: string) => {
+  const currencySymbols: Record<string, string> = {
+    CNY: '¥',
+    USD: '$',
+    EUR: '€',
+    JPY: '¥',
+    GBP: '£'
+  };
+
+  return currencySymbols[currency] ? `${currencySymbols[currency]} ${currency}` : currency;
 };
 
 // 检查节点是否为父节点且有子节点
