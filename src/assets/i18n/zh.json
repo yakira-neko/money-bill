@@ -62,7 +62,19 @@
     "accountName": "账户名称",
     "accountNameHint": "名称将作为标识",
     "currency": "货币",
-    "accountType": "账户类型"
+    "accountType": "账户类型",
+    "customCurrency": "自定义货币",
+    "customCurrencyName": "货币名称或代码",
+    "customCurrencyNamePlaceholder": "例如 BTC、积分、USDT",
+    "customCurrencySymbol": "货币符号",
+    "customCurrencySymbolPlaceholder": "例如 ₿、¤、₮",
+    "currencies": {
+      "CNY": "人民币 (CNY)",
+      "USD": "美元 (USD)",
+      "EUR": "欧元 (EUR)",
+      "JPY": "日元 (JPY)",
+      "GBP": "英镑 (GBP)"
+    }
   },
   "common": {
     "save": "保存",
