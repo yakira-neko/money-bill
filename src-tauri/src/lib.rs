@@ -1,4 +1,4 @@
-use std::{fs, sync::Mutex};
+use std::{env, fs, path::PathBuf, sync::Mutex};
 
 use chrono::DateTime;
 use database::{
@@ -15,6 +15,14 @@ mod error;
 mod tauri_struct;
 struct ConnectionWrapper {
     db: Mutex<Connection>,
+}
+
+fn database_path() -> Result<PathBuf, String> {
+    let exe_path = env::current_exe().map_err(|e| e.to_string())?;
+    let exe_dir = exe_path
+        .parent()
+        .ok_or_else(|| "Failed to resolve executable directory".to_string())?;
+    Ok(exe_dir.join("db.db3"))
 }
 
 #[tauri::command]
@@ -329,21 +337,11 @@ fn get_transaction_history(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let _ = fs::create_dir(
-        dirs::home_dir()
-            .unwrap()
-            .join("Money-bill")
-            .to_str()
-            .unwrap(),
-    );
-    let conn = Connection::open(
-        dirs::home_dir()
-            .unwrap()
-            .join("Money-bill/db.db3")
-            .to_str()
-            .unwrap(),
-    )
-    .unwrap();
+    let db_path = database_path().expect("failed to resolve database path");
+    if let Some(parent) = db_path.parent() {
+        let _ = fs::create_dir_all(parent);
+    }
+    let conn = Connection::open(db_path).unwrap();
     let _ = init::init(&conn);
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())

@@ -27,7 +27,7 @@ This is a personal finance management application built with Tauri + Vue 3 + Typ
    - `src-tauri/src/lib.rs`: Main Rust library with Tauri command handlers
    - `src-tauri/src/database/`: Database modules for accounts, transactions, and details
    - `src-tauri/src/database/init.rs`: Database schema initialization
-   - SQLite database stored in user's home directory under `Money-bill/db.db3`
+   - SQLite database stored alongside the executable as `db.db3`
 
 3. **Data Model**:
    - **ACCOUNT table**: Stores account information (name, currency, balance, icon, extra)
