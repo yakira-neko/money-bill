@@ -1,7 +1,7 @@
 <template>
-  <div class="p-4">
+  <div class="p-4 md:p-6">
     <div class="flex justify-between items-center mb-4">
-      <h1 class="text-2xl font-bold">{{ $t("assets.overview") }}</h1>
+      <h1 class="text-2xl font-heading font-bold text-foreground">{{ $t("assets.overview") }}</h1>
       <div class="flex space-x-2">
         <button @click="openAddDialog" class="btn-primary flex items-center gap-2 !py-2 !px-4 !text-sm">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>

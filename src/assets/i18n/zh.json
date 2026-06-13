@@ -67,7 +67,9 @@
     "save": "保存",
     "cancel": "取消",
     "edit": "编辑",
-    "delete": "删除"
+    "delete": "删除",
+    "toggleTheme": "切换主题",
+    "toggleLanguage": "切换语言"
   },
   "assest": {
     "name": "资产"
@@ -91,5 +93,28 @@
   "budget": "预算",
   "addBudget": "添加预算",
   "monthlyBudget": "月度预算",
+  "budgetView": {
+    "title": "预算管理",
+    "addBudget": "添加预算",
+    "editBudget": "编辑预算",
+    "totalBudget": "总预算",
+    "allExpenses": "全部支出",
+    "category": "预算分类",
+    "categoryHint": "选择一个支出分类，或选择总预算统计全部支出",
+    "amount": "预算金额",
+    "amountPlaceholder": "请输入预算金额",
+    "period": "周期",
+    "monthly": "每月",
+    "currency": "货币",
+    "spent": "已花费",
+    "remaining": "剩余",
+    "overBudget": "已超支",
+    "noBudgets": "暂无预算，点击「添加预算」创建一个吧。",
+    "loadError": "加载预算数据失败",
+    "deleteConfirm": "确定要删除该预算吗？",
+    "saveError": "保存预算失败",
+    "deleteError": "删除预算失败",
+    "amountRequired": "请输入大于 0 的预算金额"
+  },
   "budgetDate": "2024-03"
 }

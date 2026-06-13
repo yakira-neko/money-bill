@@ -1,22 +1,25 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tauri + Vue + Typescript App</title>
-  <style>
-    body {
-      background-color: #eee;
-      margin: 0;
-    }
-    * {
-      /* border: 1px solid black; */
-    }
-    .flex {
-      display: flex;
-    }
-  </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Money Bill · 金钱账单</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      /* Avoid a white flash before the app applies its theme */
+      html {
+        background-color: #ffffff;
+      }
+      html.dark {
+        background-color: #0f172a;
+      }
+    </style>
   </head>
 
   <body>

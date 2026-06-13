@@ -4,6 +4,7 @@ pub fn init(conn: &Connection) -> Result<()> {
     init_account(conn)?;
     init_transaction(conn)?;
     init_details(conn)?;
+    init_budget(conn)?;
     Ok(())
 }
 
@@ -46,6 +47,32 @@ fn init_transaction(conn: &Connection) -> Result<()> {
         id TEXT PRIMARY KEY,
         time TEXT NOT NULL,
         extra VARCHAR(255)
+    )
+    ",
+        (),
+    )?;
+    Ok(())
+}
+
+/// 初始化预算表。
+///
+/// 使用 `CREATE TABLE IF NOT EXISTS`，因此对已存在 db.db3 的老用户也可安全地补建该表。
+///
+/// 字段说明：
+/// - `id`: 预算唯一标识 (UUID)
+/// - `account`: 关联的支出账户/前缀，空字符串表示总预算
+/// - `amount`: 预算上限金额
+/// - `period`: 预算周期，目前支持 "monthly"
+/// - `currency`: 币种
+pub fn init_budget(conn: &Connection) -> Result<()> {
+    conn.execute(
+        "
+    CREATE TABLE IF NOT EXISTS BUDGET(
+        id TEXT PRIMARY KEY,
+        account VARCHAR(255) NOT NULL,
+        amount FLOAT NOT NULL,
+        period VARCHAR(255) NOT NULL,
+        currency VARCHAR(255) NOT NULL
     )
     ",
         (),

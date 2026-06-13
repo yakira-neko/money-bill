@@ -3,13 +3,15 @@ use std::{fs, sync::Mutex};
 use chrono::DateTime;
 use database::{
     account::{self},
+    budget::{self},
     details::{add_details, get_details_by_trans},
-    get_month_expenses, get_month_incomed, get_weekly_expenses, get_weekly_income, init, recalcute,
+    get_month_expenses, get_month_expenses_by_account, get_month_incomed, get_weekly_expenses,
+    get_weekly_income, init, recalcute,
     transaction::{add_transaction, get_transactions},
 };
 use rusqlite::Connection;
 use rust_decimal::prelude::*;
-use tauri_struct::{AccountAmount, AccountIconName, WeeklyIncomeExpenses};
+use tauri_struct::{AccountAmount, AccountIconName, BudgetProgress, WeeklyIncomeExpenses};
 mod database;
 mod error;
 mod tauri_struct;
@@ -327,6 +329,89 @@ fn get_transaction_history(
     Ok(history)
 }
 
+#[tauri::command]
+/// 新增一条预算
+///
+/// # 参数
+/// - `account`: 关联的支出账户/前缀，空字符串表示总预算（统计所有支出）
+/// - `amount`: 预算上限金额
+/// - `period`: 预算周期，目前为 "monthly"
+/// - `currency`: 币种
+fn add_budget(
+    conn: tauri::State<ConnectionWrapper>,
+    account: String,
+    amount: f32,
+    period: Option<String>,
+    currency: Option<String>,
+) -> Result<String, String> {
+    let conn = conn.db.lock().unwrap();
+    let amount = Decimal::from_f32_retain(amount).unwrap_or(Decimal::ZERO);
+    budget::add_budget(
+        &conn,
+        &account,
+        amount,
+        period.as_deref().unwrap_or("monthly"),
+        currency.as_deref().unwrap_or("CNY"),
+    )
+    .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+/// 更新一条预算
+fn update_budget(
+    conn: tauri::State<ConnectionWrapper>,
+    id: String,
+    account: String,
+    amount: f32,
+    period: Option<String>,
+    currency: Option<String>,
+) -> Result<(), String> {
+    let conn = conn.db.lock().unwrap();
+    let amount = Decimal::from_f32_retain(amount).unwrap_or(Decimal::ZERO);
+    budget::update_budget(
+        &conn,
+        &id,
+        &account,
+        amount,
+        period.as_deref().unwrap_or("monthly"),
+        currency.as_deref().unwrap_or("CNY"),
+    )
+    .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+/// 删除一条预算
+fn delete_budget(conn: tauri::State<ConnectionWrapper>, id: String) -> Result<(), String> {
+    let conn = conn.db.lock().unwrap();
+    budget::del_budget(&conn, &id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+/// 获取所有预算及其本月执行进度
+///
+/// 对每条预算，统计其关联账户在当前自然月内的累计支出，连同预算上限一并返回，
+/// 供前端展示进度条与超支提醒。
+fn get_budgets(conn: tauri::State<ConnectionWrapper>) -> Result<Vec<BudgetProgress>, String> {
+    let conn = conn.db.lock().unwrap();
+    let budgets = budget::get_budgets(&conn).map_err(|e| e.to_string())?;
+    let mut result = Vec::new();
+    for b in budgets {
+        let spent = get_month_expenses_by_account(&conn, &b.account)
+            .map_err(|e| e.to_string())?
+            .to_f32()
+            .unwrap_or(0.0);
+        result.push(BudgetProgress {
+            id: b.id,
+            account: b.account,
+            amount: b.amount.to_f32().unwrap_or(0.0),
+            spent,
+            period: b.period,
+            currency: b.currency,
+        });
+    }
+    Ok(result)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let _ = fs::create_dir(
@@ -345,6 +430,8 @@ pub fn run() {
     )
     .unwrap();
     let _ = init::init(&conn);
+    // 为老版本（已存在 db.db3）的用户补建 BUDGET 表，避免因 ACCOUNT 表已存在导致 init 提前返回而漏建。
+    let _ = init::init_budget(&conn);
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_shell::init())
@@ -363,7 +450,11 @@ pub fn run() {
             get_liabilities_accounts,
             add_account,
             update_account,
-            delete_account
+            delete_account,
+            add_budget,
+            update_budget,
+            delete_budget,
+            get_budgets
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

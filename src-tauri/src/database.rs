@@ -10,6 +10,7 @@ pub mod details;
 use error::Error;
 
 use crate::error;
+pub mod budget;
 pub mod init;
 pub mod transaction;
 
@@ -81,6 +82,49 @@ pub fn get_month_expenses(conn: &Connection) -> Result<Decimal, Error> {
     }
 
     Ok(result)
+}
+
+/// 统计当前自然月内、某个支出账户（前缀）的总支出。
+///
+/// # 参数
+/// * `conn` - 数据库连接。
+/// * `account_prefix` - 账户前缀，例如 "expenses::food"。传入 "expenses" 即统计全部支出。
+///
+/// # 返回
+/// * 该前缀下本月累计支出的 `Decimal`。支出在复式记账中通常为正数。
+pub fn get_month_expenses_by_account(
+    conn: &Connection,
+    account_prefix: &str,
+) -> Result<Decimal, Error> {
+    let mut result = Decimal::zero();
+    let mut stmt = conn.prepare(
+        "SELECT account,balance FROM DETAIL INNER JOIN TRANS ON trans_id=TRANS.id and strftime('%Y-%m', time) = strftime('%Y-%m', 'now')",
+    )?;
+    let iter = stmt.query_map(params![], |row| {
+        let account: String = row.get(0)?;
+        let balance = Decimal::from_f32_retain(row.get::<usize, f32>(1)?).unwrap_or(Decimal::zero());
+        Ok((account, balance))
+    })?;
+    for i in iter {
+        let (account, balance) = i?;
+        // 只统计支出账户，并按传入前缀精确过滤（避免 "expenses::food" 误匹配 "expenses::foodcourt"）。
+        if account.starts_with("expenses") && account_matches_prefix(&account, account_prefix) {
+            result += balance;
+        }
+    }
+
+    Ok(result)
+}
+
+/// 判断某账户是否属于给定预算前缀。
+///
+/// - 前缀为空或恰为 "expenses"：匹配所有支出账户。
+/// - 否则：账户需与前缀完全相等，或以「前缀 + ::」开头（即其子账户）。
+fn account_matches_prefix(account: &str, prefix: &str) -> bool {
+    if prefix.is_empty() || prefix == "expenses" {
+        return true;
+    }
+    account == prefix || account.starts_with(&format!("{}::", prefix))
 }
 
 /// Recalculates account balances and updates them in the database.
@@ -267,6 +311,41 @@ mod tests {
                 assert_eq!(account.balance, balance);
             }
         }
+        Ok(())
+    }
+
+    #[test]
+    fn test_get_month_expenses_by_account() -> Result<(), Error> {
+        let conn = Connection::open_in_memory()?;
+        init::init(&conn)?;
+        account::add_account(&conn, "income::salary", "CNY", "", "")?;
+        account::add_account(&conn, "expenses::food", "CNY", "", "")?;
+        account::add_account(&conn, "expenses::food::lunch", "CNY", "", "")?;
+        account::add_account(&conn, "expenses::transport", "CNY", "", "")?;
+
+        let date = chrono::Utc::now();
+
+        // 食物支出 30（food 10 + food::lunch 20）
+        let id = transaction::add_transaction(&conn, date, "")?;
+        details::add_details(&conn, &id, "income::salary", "CNY", dec!(-10.0))?;
+        details::add_details(&conn, &id, "expenses::food", "CNY", dec!(10.0))?;
+        let id = transaction::add_transaction(&conn, date, "")?;
+        details::add_details(&conn, &id, "income::salary", "CNY", dec!(-20.0))?;
+        details::add_details(&conn, &id, "expenses::food::lunch", "CNY", dec!(20.0))?;
+
+        // 交通支出 5
+        let id = transaction::add_transaction(&conn, date, "")?;
+        details::add_details(&conn, &id, "income::salary", "CNY", dec!(-5.0))?;
+        details::add_details(&conn, &id, "expenses::transport", "CNY", dec!(5.0))?;
+
+        // 指定分类（含子分类）
+        assert_eq!(dec!(30.0), get_month_expenses_by_account(&conn, "expenses::food")?);
+        assert_eq!(dec!(5.0), get_month_expenses_by_account(&conn, "expenses::transport")?);
+        // 总预算：所有支出 35
+        assert_eq!(dec!(35.0), get_month_expenses_by_account(&conn, "expenses")?);
+        assert_eq!(dec!(35.0), get_month_expenses_by_account(&conn, "")?);
+        // 与 get_month_expenses 一致
+        assert_eq!(get_month_expenses(&conn)?, get_month_expenses_by_account(&conn, "expenses")?);
         Ok(())
     }
 }
