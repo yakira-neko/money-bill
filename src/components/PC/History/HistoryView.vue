@@ -1,86 +1,118 @@
 <template>
-  <div class="flex flex-col w-full h-full p-4">
-    <div class="text-xl font-bold mb-4">{{ $t("history") }}</div>
+  <div class="flex flex-col w-full h-full p-4 md:p-6 overflow-hidden">
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="text-2xl font-heading font-bold text-foreground">{{ $t("history") }}</h1>
+      <span v-if="transactions.length" class="text-sm text-muted-foreground">
+        {{ transactions.length }}
+      </span>
+    </div>
+
+    <!-- Empty state -->
     <div
       v-if="transactions.length === 0"
-      class="text-gray-500 text-center py-8"
+      class="flex flex-1 flex-col items-center justify-center text-muted-foreground py-16"
     >
-      {{ $t("no_transactions") }}
+      <v-icon icon="mdi-receipt-text-outline" size="48" class="mb-3 opacity-50"></v-icon>
+      <p>{{ $t("no_transactions") }}</p>
     </div>
-    <div v-else class="overflow-y-auto">
+
+    <!-- Transaction list -->
+    <div v-else class="flex-1 overflow-y-auto space-y-3 pr-1">
       <div
         v-for="transaction in transactions"
         :key="transaction.id"
-        class="border rounded-lg p-4 mb-3 bg-white shadow-sm"
+        class="rounded-lg border border-border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md"
       >
-        <!-- Transaction header with toggle button -->
-        <div class="flex justify-between items-center mb-2">
-          <div class="font-semibold">{{ transaction.date }}</div>
-          <div class="flex items-center">
-            <span class="text-red-600 font-bold text-lg mr-2">
-              {{ formatAmount(getTotalExpenses(transaction.details)) }}
+        <!-- Header (clickable) -->
+        <button
+          type="button"
+          class="w-full flex items-center justify-between gap-3 px-4 py-3 text-left"
+          @click="toggleTransaction(transaction.id)"
+        >
+          <div class="flex items-center gap-3 min-w-0">
+            <div
+              class="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary shrink-0"
+            >
+              <v-icon icon="mdi-calendar-blank-outline" size="18"></v-icon>
+            </div>
+            <div class="min-w-0">
+              <div class="font-semibold text-foreground">{{ transaction.date }}</div>
+              <div v-if="transaction.extra" class="text-xs text-muted-foreground truncate">
+                {{ transaction.extra }}
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span
+              class="font-bold tabular-nums"
+              :class="getTotalExpenses(transaction.details) > 0 ? 'text-destructive' : 'text-muted-foreground'"
+            >
+              {{ getTotalExpenses(transaction.details) > 0 ? "-" : "" }}{{ formatAmount(getTotalExpenses(transaction.details)) }}
             </span>
-            <div class="text-sm text-gray-500 mr-2">
-              {{ transaction.extra }}
-            </div>
-            <button
-              @click="toggleTransaction(transaction.id)"
-              class="text-blue-500 hover:text-blue-700"
-            >
-              {{ collapsedTransactions[transaction.id] ? "▼" : "▲" }}
-            </button>
+            <v-icon
+              :icon="collapsedTransactions[transaction.id] ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+              class="text-muted-foreground"
+            ></v-icon>
           </div>
-        </div>
+        </button>
 
-        <!-- Collapsed view: Show expenses summary -->
-        <div v-if="collapsedTransactions[transaction.id]"></div>
+        <!-- Expanded details -->
+        <v-expand-transition>
+          <div
+            v-show="!collapsedTransactions[transaction.id]"
+            class="border-t border-border px-4 py-3"
+          >
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Income column -->
+              <div>
+                <div class="flex items-center gap-1.5 text-sm font-medium text-success mb-2">
+                  <v-icon icon="mdi-arrow-down-bold" size="14"></v-icon>
+                  {{ $t("addBillAccount.income") }}
+                </div>
+                <div
+                  v-if="incomeDetails(transaction.details).length === 0"
+                  class="text-xs text-muted-foreground"
+                >
+                  —
+                </div>
+                <div
+                  v-for="detail in incomeDetails(transaction.details)"
+                  :key="detail.id"
+                  class="flex items-center justify-between gap-2 py-1"
+                >
+                  <span class="text-sm text-foreground truncate">{{ displayName(detail.account) }}</span>
+                  <span class="text-sm font-medium text-success tabular-nums">
+                    {{ formatAmount(detail.balance) }}
+                  </span>
+                </div>
+              </div>
 
-        <!-- Expanded view: Show all details in two columns -->
-        <div v-else class="grid grid-cols-2 gap-4">
-          <!-- Income column (positive balance) -->
-          <div class="border-r pr-2">
-            <div class="text-green-600 font-medium mb-2">{{ $t("addBillAccount.income") }}</div>
-            <div
-              v-for="detail in transaction.details.filter(d => d.balance > 0)"
-              :key="detail.id"
-              class="flex items-center mb-2"
-            >
-              <img
-                :src="getAccountIcon(detail.account)"
-                class="w-6 h-6 mr-2"
-                :alt="detail.account"
-              />
-              <div class="flex flex-col">
-                <div class="text-sm font-medium">{{ detail.account }}</div>
-                <div class="text-green-600">
-                  {{ formatAmount(detail.balance) }}
+              <!-- Expense column -->
+              <div class="sm:border-l sm:border-border sm:pl-4">
+                <div class="flex items-center gap-1.5 text-sm font-medium text-destructive mb-2">
+                  <v-icon icon="mdi-arrow-up-bold" size="14"></v-icon>
+                  {{ $t("expenses") }}
+                </div>
+                <div
+                  v-if="expenseDetails(transaction.details).length === 0"
+                  class="text-xs text-muted-foreground"
+                >
+                  —
+                </div>
+                <div
+                  v-for="detail in expenseDetails(transaction.details)"
+                  :key="detail.id"
+                  class="flex items-center justify-between gap-2 py-1"
+                >
+                  <span class="text-sm text-foreground truncate">{{ displayName(detail.account) }}</span>
+                  <span class="text-sm font-medium text-destructive tabular-nums">
+                    {{ formatAmount(Math.abs(detail.balance)) }}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
-          
-          <!-- Expenses column (negative balance) -->
-          <div class="pl-2">
-            <div class="text-red-600 font-medium mb-2">{{ $t("expenses") }}</div>
-            <div
-              v-for="detail in transaction.details.filter(d => d.balance < 0)"
-              :key="detail.id"
-              class="flex items-center mb-2"
-            >
-              <img
-                :src="getAccountIcon(detail.account)"
-                class="w-6 h-6 mr-2"
-                :alt="detail.account"
-              />
-              <div class="flex flex-col">
-                <div class="text-sm font-medium">{{ detail.account }}</div>
-                <div class="text-red-600">
-                  {{ formatAmount(Math.abs(detail.balance)) }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        </v-expand-transition>
       </div>
     </div>
   </div>
@@ -110,7 +142,6 @@ const collapsedTransactions = reactive<Record<string, boolean>>({});
 // Fetch transaction history from the backend
 const fetchTransactions = async () => {
   try {
-    // This would need to be implemented in the Rust backend
     const result: any[] = await invoke("get_transaction_history");
     transactions.value = result.map((item) => ({
       id: item.id,
@@ -137,17 +168,18 @@ const toggleTransaction = (id: string) => {
   collapsedTransactions[id] = !collapsedTransactions[id];
 };
 
-// Get account icon based on account name
-const getAccountIcon = (accountName: string) => {
-  // For now, we'll use a default icon
-  // In a real implementation, this would map to specific icons
-  return "/svg/wallet.svg";
-};
+// Friendly account name (strip type prefix, pretty separators)
+const displayName = (name: string) =>
+  name.replace(/^(income|expenses|assets|liabilities)::/, "").replace(/::/g, " » ");
 
-// Format amount with proper sign
-const formatAmount = (amount: number) => {
-  return amount.toFixed(2);
-};
+const incomeDetails = (details: TransactionDetail[]) =>
+  details.filter((detail) => detail.balance > 0);
+
+const expenseDetails = (details: TransactionDetail[]) =>
+  details.filter((detail) => detail.balance < 0);
+
+// Format amount with two decimals
+const formatAmount = (amount: number) => amount.toFixed(2);
 
 // Calculate total expenses
 const getTotalExpenses = (details: TransactionDetail[]) => {

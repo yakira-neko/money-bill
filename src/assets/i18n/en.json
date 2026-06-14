@@ -8,6 +8,13 @@
   "balance": "Balance",
   "history": "History",
   "no_transactions": "No transactions found",
+  "mon": "Mon",
+  "tue": "Tue",
+  "wed": "Wed",
+  "thu": "Thu",
+  "fri": "Fri",
+  "sat": "Sat",
+  "sun": "Sun",
   "app": {
     "name": "Money Bill"
   },
@@ -80,7 +87,9 @@
     "save": "Save",
     "cancel": "Cancel",
     "edit": "Edit",
-    "delete": "Delete"
+    "delete": "Delete",
+    "toggleTheme": "Toggle theme",
+    "toggleLanguage": "Switch language"
   },
   "addBillAccount": {
     "selectAccount": "Select Account",
@@ -90,6 +99,32 @@
     "expenses": "Expenses",
     "assets": "Assets",
     "liabilities": "Liabilities"
+  },
+  "budget": "Budget",
+  "addBudget": "Add Budget",
+  "monthlyBudget": "Monthly Budget",
+  "budgetView": {
+    "title": "Budget Management",
+    "addBudget": "Add Budget",
+    "editBudget": "Edit Budget",
+    "totalBudget": "Total Budget",
+    "allExpenses": "All Expenses",
+    "category": "Budget Category",
+    "categoryHint": "Choose an expense category, or Total Budget for all expenses",
+    "amount": "Budget Amount",
+    "amountPlaceholder": "Please enter budget amount",
+    "period": "Period",
+    "monthly": "Monthly",
+    "currency": "Currency",
+    "spent": "Spent",
+    "remaining": "Remaining",
+    "overBudget": "Over budget",
+    "noBudgets": "No budgets yet. Click \"Add Budget\" to create one.",
+    "loadError": "Failed to load budget data",
+    "deleteConfirm": "Are you sure you want to delete this budget?",
+    "saveError": "Failed to save budget",
+    "deleteError": "Failed to delete budget",
+    "amountRequired": "Please enter a budget amount greater than 0"
   },
   "budgetDate": "2024-03"
 }

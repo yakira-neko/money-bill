@@ -4,7 +4,7 @@
     :rail="!mobile && rail"
     :permanent="!mobile"
     :temporary="mobile"
-    @click="onDrawerClick"
+    @click="!mobile && (rail = false)"
     class="!bg-card !border-r !border-border"
     elevation="0"
   >
