@@ -27,6 +27,7 @@
               v-model="date"
               color="primary"
               @update:modelValue="dateMenu = false"
+              class="!bg-card !text-foreground"
             ></v-date-picker>
           </v-menu>
         </div>
@@ -205,6 +206,15 @@ const addTransaction = () => {
   box-shadow:
     0 1px 2px rgb(15 23 42 / 0.04),
     0 14px 34px rgb(15 23 42 / 0.06);
+}
+
+/* 确保 btn-primary 内的所有内容（包括 Vuetify 图标）使用正确的文字颜色 */
+.btn-primary {
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+.btn-primary :deep(.v-icon) {
+  color: hsl(var(--primary-foreground)) !important;
 }
 
 .account-row {
